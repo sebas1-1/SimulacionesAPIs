@@ -59,6 +59,68 @@ def buscar_cliente(identificacion: int):
         fecha_nacimiento=resultado[3],
     )
 
+@app.get(
+    "/socios/proveedores/repuestos",
+    response_model=list[RepuestoSocio],
+)
+def buscar_catalogo_repuestos(buscar: str):
+    termino = buscar.strip().upper()
+
+    if not termino:
+        return []
+
+    patron = f"%{termino}%"
+
+    try:
+        with obtener_conexion() as conexion:
+            cursor = conexion.cursor()
+            cursor.execute(
+                """
+                SELECT
+                    id_repuesto,
+                    proveedor,
+                    codigo,
+                    nombre,
+                    marca,
+                    precio,
+                    existencia,
+                    tiempo_entrega_dias
+                FROM socios_repuestos
+                WHERE activo = 1
+                  AND (
+                      UPPER(codigo) LIKE ?
+                      OR UPPER(nombre) LIKE ?
+                      OR UPPER(ISNULL(marca, '')) LIKE ?
+                  )
+                ORDER BY nombre ASC, codigo ASC, precio ASC
+                """,
+                patron,
+                patron,
+                patron,
+            )
+            filas = cursor.fetchall()
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail="Error al buscar el catálogo de proveedores",
+        ) from error
+
+    return [
+        RepuestoSocio(
+            id_repuesto=fila[0],
+            proveedor=fila[1],
+            codigo=fila[2],
+            nombre=fila[3],
+            marca=fila[4],
+            precio=float(fila[5]),
+            existencia=fila[6],
+            tiempo_entrega_dias=fila[7],
+        )
+        for fila in filas
+    ]
+
+
 @app.get("/socios/proveedores/repuestos/{codigo}",response_model=list[RepuestoSocio],
 )
 def buscar_repuestos_proveedores(codigo: str):
