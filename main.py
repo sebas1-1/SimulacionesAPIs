@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from database import obtener_conexion
 from models import Cliente, RepuestoSocio, PolizaSocio, GruaSocio, VehiculoAlquilerSocio
+from routers.comercial import router as comercial_router
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import date
 
@@ -18,15 +19,14 @@ app.add_middleware(
         "http://127.0.0.1:8081",
     ],
     allow_credentials=True,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
+app.include_router(comercial_router)
 
 
-@app.get("/")
-def inicio():
-    return {"message": "Welcome to the Retro Garage Simulations API!"}
+
 
 @app.get("/clientes/{identificacion}", response_model=Cliente)
 def buscar_cliente(identificacion: int):

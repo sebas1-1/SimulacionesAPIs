@@ -1,0 +1,15 @@
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+1.http://127.0.0.1:8000/api/comercial/v1/servicios
+2.http://127.0.0.1:8000/api/comercial/v1/servicios?buscar=aceite
+3.http://127.0.0.1:8000/api/comercial/v1/agenda/disponibilidad?fecha=2026-07-28
+4. Generar cotización
+{
+  "servicios": [1],
+  "productos": [
+    {
+      "id_producto": 1,
+      "cantidad": 2
+    }
+  ]
+}

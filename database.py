@@ -14,6 +14,7 @@ def obtener_conexion():
     contrasena = os.getenv("DB_PASSWORD")
     puerto = os.getenv("DB_PORT")
     controlador = os.getenv("DB_DRIVER")
+    cifrado = os.getenv("DB_ENCRYPT", "no")
 
     connection_string = (
         f"DRIVER={{{controlador}}};"
@@ -21,7 +22,7 @@ def obtener_conexion():
         f"DATABASE={base_datos};"
         f"UID={usuario};"
         f"PWD={contrasena};"
-        "Encrypt=yes;"
+        f"Encrypt={cifrado};"
         "TrustServerCertificate=yes;"
     )
 
