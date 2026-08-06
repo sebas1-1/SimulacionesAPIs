@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from database import obtener_conexion
 from models import Cliente, RepuestoSocio, PolizaSocio, GruaSocio, VehiculoAlquilerSocio
 from routers.comercial import router as comercial_router
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import date
+from config import settings
 
 
 app = FastAPI(
@@ -14,16 +16,57 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8081",
-        "http://127.0.0.1:8081",
-    ],
+    allow_origins=list(settings.cors_origins),
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def agregar_encabezados_seguridad(request, call_next):
+    respuesta = await call_next(request)
+    respuesta.headers["X-Content-Type-Options"] = "nosniff"
+    respuesta.headers["X-Frame-Options"] = "DENY"
+    respuesta.headers["Referrer-Policy"] = "no-referrer"
+    return respuesta
+
+
 app.include_router(comercial_router)
+
+
+@app.get("/", include_in_schema=False)
+def informacion_servicio():
+    return {
+        "service": "retrogarage-simulaciones",
+        "status": "ok",
+        "docs": "/docs",
+    }
+
+
+@app.get("/health", include_in_schema=False)
+def health():
+    return {
+        "status": "ok",
+        "service": "retrogarage-simulaciones",
+        "environment": settings.environment,
+    }
+
+
+@app.get("/ready", include_in_schema=False)
+def ready():
+    try:
+        with obtener_conexion() as conexion:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+    except Exception:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "not_ready", "database": "disconnected"},
+        )
+
+    return {"status": "ready", "database": "connected"}
 
 
 

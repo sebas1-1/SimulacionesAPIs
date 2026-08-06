@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: retrogarage-simulaciones
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /ready
+    autoDeployTrigger: commit
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DB_SERVER
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_PORT
+        value: "1433"
+      - key: DB_DRIVER
+        value: ODBC Driver 18 for SQL Server
+      - key: DB_ENCRYPT
+        value: "yes"
+      - key: DB_TRUST_SERVER_CERTIFICATE
+        value: "yes"
+      - key: DB_CONNECTION_TIMEOUT_SECONDS
+        value: "10"
